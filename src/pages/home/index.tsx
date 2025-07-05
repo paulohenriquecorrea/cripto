@@ -1,10 +1,58 @@
-import {useState, FormEvent} from 'react';
+import {useState, type FormEvent, useEffect} from 'react';
 import {BsSearch } from 'react-icons/bs';
 import {Link, useNavigate} from 'react-router-dom';
 import styles from './home.module.css';
 
+interface CoinProps {
+    id: string;
+    rank: string;
+    symbol: string;
+    name: string;
+    supply: string;
+    maxSupply: string;
+    marketCapUsd: string;
+    volumeUsd24Hr: string;
+    priceUsd: string;
+    changePercent24Hr: string;
+    vwap24Hr: string;
+    explorer: string;
+}
+
+interface dataProps{
+    data: CoinProps[]
+}
+
 export function Home(){
     const [input, setInput] = useState("");
+    const [coins, setCoins] = useState<CoinProps[]>([]);
+
+    useEffect( () => {
+        getData();
+    }, [])
+
+    async function getData() {
+        fetch("https://rest.coincap.io/v3/assets?limit=10&offset=0&apiKey=04ed85be2ad375685d2a6680ba6b975039652fd47df96f2a6be85bdb226fbbf2")
+        .then(response => response.json())
+        .then((data: dataProps) => {
+            const coinsData = data.data;
+
+            const price = Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD"
+            })
+
+            const formatedResult = coinsData.map((item) => {
+                const formated = {
+                    ...item,
+                    formatedPrice : price.format(Number(item.priceUsd))
+                }
+
+                return formated;
+            })
+
+            console.log(formatedResult);
+        })
+    }
 
     const navigate = useNavigate();
 
