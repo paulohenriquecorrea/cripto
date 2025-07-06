@@ -16,6 +16,9 @@ interface CoinProps {
     changePercent24Hr: string;
     vwap24Hr: string;
     explorer: string;
+    formatedPrice?: string;
+    formatedMarket?: string;
+    formatedVolume?: string;
 }
 
 interface dataProps{
@@ -39,18 +42,26 @@ export function Home(){
             const price = Intl.NumberFormat("en-US", {
                 style: "currency",
                 currency: "USD"
-            })
+            });
+            
+            const priceCompact = Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                notation: "compact"
+            });
 
             const formatedResult = coinsData.map((item) => {
                 const formated = {
                     ...item,
-                    formatedPrice : price.format(Number(item.priceUsd))
+                    formatedPrice : price.format(Number(item.priceUsd)),
+                    formatedMarket: priceCompact.format(Number(item.marketCapUsd)),
+                    formatedVolume: priceCompact.format(Number(item.volumeUsd24Hr))
                 }
 
                 return formated;
             })
 
-            console.log(formatedResult);
+            setCoins(formatedResult);
         })
     }
 
@@ -97,30 +108,44 @@ export function Home(){
                 </thead>
                 <tbody id='tbody'>
 
-                    <tr className={styles.tr}>
+                    {coins.length > 0 && coins.map((coin)=>(
+                        
+                        <tr className={styles.tr} key={coin.id}>
 
                         <td className={styles.tdLabel} data-label="Moeda">
-                            <Link to={'/detail/bitcoin'}>
-                                <span>Bitcoin</span> | BTC
-                            </Link>
+
+                            <div className={styles.name}>
+
+                                <img 
+                                    className={styles.logo}
+                                    src={`https://assets.coincap.io/assets/icons/${coin.symbol.toLowerCase()}@2x.png`} 
+                                    alt="Imagem bitcoin"
+                                />
+                                
+                                <Link to={`/detail/${coin.id}`}>
+                                    <span>{coin.name}</span> | {coin.symbol}
+                                </Link>
+                            </div>
+
                         </td>
 
                         <td className={styles.tdLabel} data-label="Valor Mercado">
-                            1T
+                            {coin.formatedPrice}
                         </td>
                         
                         <td className={styles.tdLabel} data-label="Preço">
-                            8.000
+                            {coin.formatedPrice}
                         </td>
 
                         <td className={styles.tdLabel} data-label="Volume">
-                            2B
+                            {coin.formatedVolume}
                         </td>
 
-                        <td className={styles.tdProfit} data-label="Mudança 24h">
-                           <span>1.20</span>
+                        <td className={Number(coin.changePercent24Hr) > 0 ? styles.tdProfit : styles.tdLoss} data-label="Mudança 24h">
+                           <span>{Number(coin.changePercent24Hr).toFixed(3)}</span>
                         </td>
                     </tr>
+                    ))}
 
                 </tbody>
             </table>
